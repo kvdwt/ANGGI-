@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Little Something...</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgMain: '#f1edf5',
+                        paper: '#fbf9fc',
+                        textMain: '#302b35',
+                        mutedText: '#7f7785',
+                        lavender: '#c9bad5',
+                        lightLavender: '#ded5e5',
+                        deepPurple: '#5e4d67',
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Manrope', 'sans-serif'],
+                        mono: ['DM Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: #f1edf5;
+            color: #302b35;
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Subtle Shake Effect for Useless Button */
+        @keyframes subtleShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px) rotate(-1deg); }
+            40% { transform: translateX(6px) rotate(1deg); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+        .animate-shake {
+            animation: subtleShake 0.4s ease-in-out;
+        }
+
+        /* Lily SVG Animations */
+        .lily-stem {
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .lily-leaf {
+            transform-origin: bottom center;
+            transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease;
+        }
+
+        .lily-petal {
+            transform-origin: 100px 140px;
+            transition: transform 1.5s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 1s ease, fill 1.2s ease;
+        }
+
+        .lily-stamen {
+            transform-origin: 100px 130px;
+            transition: transform 1.2s ease, opacity 1s ease;
+        }
+
+        /* Smooth Section Transitions */
+        .section-fade {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: none;
+        }
+
+        .section-fade.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            display: flex;
+        }
+
+        /* Custom Key Styling */
+        .v-key {
+            background: #fffdfd;
+            border: 1px solid #ded5e5;
+            color: #302b35;
+            box-shadow: 0 2px 4px rgba(48, 43, 53, 0.04);
+            transition: all 0.15s ease;
+        }
+        .v-key:active {
+            background: #ded5e5;
+            transform: scale(0.94);
+        }
+
+        /* Ambient floating particles */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            background: #c9bad5;
+            opacity: 0.35;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.8); opacity: 0; }
+            50% { opacity: 0.4; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1edf5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c9bad5;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen px-4 py-6 relative">
+
+    <!-- Ambient Background Particles -->
+    <div id="particles" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- Header / Title Banner -->
+    <header class="w-full max-w-md text-center pt-2 z-10">
+        <h1 class="font-serif italic text-sm text-mutedText tracking-widest uppercase">A Little Interactive Journey</h1>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main id="mainContainer" class="w-full max-w-md my-auto flex flex-col items-center justify-center z-10 py-4">
+
+        <!-- ==========================================
+             LILY SVG PROGRESS INDICATOR
+        ========================================== -->
+        <div class="w-32 h-32 md:w-40 md:h-40 mb-4 relative flex items-center justify-center transition-transform duration-700" id="lilyContainer">
+            <svg id="lilySvg" class="w-full h-full drop-shadow-sm" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Stem -->
+                <path id="lilyStem" class="lily-stem" d="M 100 210 Q 98 160 100 130 Q 102 110 100 90" stroke="#7f7785" stroke-width="3.5" stroke-linecap="round" />
+                
+                <!-- Stem Leaves -->
+                <!-- Leaf Left 1 -->
+                <path id="leafL1" class="lily-leaf" d="M 99 170 Q 70 160 65 145 Q 80 155 99 165" fill="#c9bad5" opacity="0.2" style="transform: scale(0);" />
+                <!-- Leaf Right 1 -->
+                <path id="leafR1" class="lily-leaf" d="M 100 150 Q 130 140 135 125 Q 120 138 100 146" fill="#c9bad5" opacity="0.2" style="transform: scale(0);" />
+                <!-- Leaf Left 2 -->
+                <path id="leafL2" class="lily-leaf" d="M 99 120 Q 75 105 70 90 Q 82 105 99 115" fill="#ded5e5" opacity="0.2" style="transform: scale(0);" />
+
+                <!-- Flower Head Group -->
+                <g id="flowerHead" style="transform: translateY(20px) scale(0.3); transform-origin: 100px 90px; opacity: 0.3; transition: transform 1.2s ease, opacity 1s ease;">
+                    
+                    <!-- Outer Petals (Back) -->
+                    <path id="petalBackL" class="lily-petal" d="M 100 90 C 70 60 50 30 45 10 C 65 25 88 55 100 90" fill="#ded5e5" opacity="0.8"/>
+                    <path id="petalBackR" class="lily-petal" d="M 100 90 C 130 60 150 30 155 10 C 135 25 112 55 100 90" fill="#ded5e5" opacity="0.8"/>
+                    <path id="petalBackTop" class="lily-petal" d="M 100 90 C 90 50 95 15 100 0 C 105 15 110 50 100 90" fill="#e8e1ee" opacity="0.8"/>
+
+                    <!-- Stamens -->
+                    <g id="stamens" class="lily-stamen" opacity="0" style="transform: scale(0.2);">
+                        <path d="M 100 90 Q 92 60 85 45" stroke="#5e4d67" stroke-width="1.5" stroke-linecap="round"/>
+                        <circle cx="85" cy="43" r="2.5" fill="#5e4d67"/>
+                        
+                        <path d="M 100 90 Q 100 55 100 40" stroke="#5e4d67" stroke-width="1.5" stroke-linecap="round"/>
+                        <circle cx="100" cy="38" r="2.5" fill="#5e4d67"/>
+
+                        <path d="M 100 90 Q 108 60 115 45" stroke="#5e4d67" stroke-width="1.5" stroke-linecap="round"/>
+                        <circle cx="115" cy="43" r="2.5" fill="#5e4d67"/>
+                    </g>
+
+                    <!-- Inner Petals (Front Bloom) -->
+                    <path id="petalFrontL" class="lily-petal" d="M 100 90 C 60 80 30 65 20 50 C 45 60 78 78 100 90" fill="#fbf9fc" stroke="#c9bad5" stroke-width="0.8"/>
+                    <path id="petalFrontR" class="lily-petal" d="M 100 90 C 140 80 170 65 180 50 C 155 60 122 78 100 90" fill="#fbf9fc" stroke="#c9bad5" stroke-width="0.8"/>
+                    <path id="petalFrontCenter" class="lily-petal" d="M 100 90 C 85 110 70 125 100 135 C 130 125 115 110 100 90" fill="#fffdfd" stroke="#ded5e5" stroke-width="0.8"/>
+                </g>
+            </svg>
+        </div>
+
+
+        <!-- ==========================================
+             SECTION 1: NAME GATE
+        ========================================== -->
+        <section id="sec-1" class="section-fade active flex-col items-center w-full bg-paper p-6 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-2">Step 01</span>
+            <h2 class="font-serif text-2xl text-textMain mb-1">Who am I here with?</h2>
+            <p class="text-xs text-mutedText mb-6">Type your name using the keyboard below.</p>
+
+            <!-- Display Area (DIV instead of Input to avoid native keyboard) -->
+            <div id="typedDisplay" class="w-full h-12 bg-bgMain rounded-xl border border-lavender flex items-center justify-center font-mono text-xl tracking-widest text-deepPurple font-semibold mb-2 px-4 uppercase overflow-hidden shadow-inner min-h-[48px]">
+                <span id="typedText"></span><span class="animate-pulse text-lavender ml-0.5">|</span>
+            </div>
+
+            <!-- Error/Feedback message -->
+            <div id="gateFeedback" class="h-6 text-xs text-deepPurple/80 font-medium mb-3 transition-opacity duration-300 opacity-0">
+                Hmm. I don't think that's you.
+            </div>
+
+            <!-- Custom Virtual Keyboard -->
+            <div class="w-full max-w-xs flex flex-col gap-1.5" id="virtualKeyboard">
+                <!-- Row 1: A-G -->
+                <div class="grid grid-cols-7 gap-1">
+                    <button type="button" data-key="A" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">A</button>
+                    <button type="button" data-key="B" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">B</button>
+                    <button type="button" data-key="C" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">C</button>
+                    <button type="button" data-key="D" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">D</button>
+                    <button type="button" data-key="E" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">E</button>
+                    <button type="button" data-key="F" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">F</button>
+                    <button type="button" data-key="G" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">G</button>
+                </div>
+                <!-- Row 2: H-N -->
+                <div class="grid grid-cols-7 gap-1">
+                    <button type="button" data-key="H" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">H</button>
+                    <button type="button" data-key="I" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">I</button>
+                    <button type="button" data-key="J" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">J</button>
+                    <button type="button" data-key="K" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">K</button>
+                    <button type="button" data-key="L" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">L</button>
+                    <button type="button" data-key="M" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">M</button>
+                    <button type="button" data-key="N" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">N</button>
+                </div>
+                <!-- Row 3: O-U -->
+                <div class="grid grid-cols-7 gap-1">
+                    <button type="button" data-key="O" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">O</button>
+                    <button type="button" data-key="P" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">P</button>
+                    <button type="button" data-key="Q" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">Q</button>
+                    <button type="button" data-key="R" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">R</button>
+                    <button type="button" data-key="S" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">S</button>
+                    <button type="button" data-key="T" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">T</button>
+                    <button type="button" data-key="U" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">U</button>
+                </div>
+                <!-- Row 4: V-Z -->
+                <div class="grid grid-cols-5 gap-1 px-4">
+                    <button type="button" data-key="V" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">V</button>
+                    <button type="button" data-key="W" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">W</button>
+                    <button type="button" data-key="X" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">X</button>
+                    <button type="button" data-key="Y" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">Y</button>
+                    <button type="button" data-key="Z" class="v-key h-10 rounded-lg text-sm font-semibold flex items-center justify-center">Z</button>
+                </div>
+                <!-- Row 5: Action Keys -->
+                <div class="grid grid-cols-3 gap-1.5 mt-1">
+                    <button type="button" id="btnClear" class="v-key h-11 rounded-lg text-xs font-mono font-bold text-mutedText bg-lightLavender/40 hover:bg-lightLavender">CLEAR</button>
+                    <button type="button" id="btnBack" class="v-key h-11 rounded-lg text-xs font-mono font-bold text-mutedText bg-lightLavender/40 hover:bg-lightLavender">⌫ BACK</button>
+                    <button type="button" id="btnEnter" class="v-key h-11 rounded-lg text-xs font-mono font-bold text-white bg-deepPurple hover:opacity-90">ENTER</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 2: INTRO
+        ========================================== -->
+        <section id="sec-2" class="section-fade flex-col items-center w-full bg-paper p-8 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-3">Step 02</span>
+            <div id="introStep1" class="transition-opacity duration-500">
+                <h2 class="font-serif text-2xl text-textMain mb-2">Well, hello there.</h2>
+                <p class="text-sm text-mutedText leading-relaxed">I didn’t really know what to put here.</p>
+            </div>
+            <div id="introStep2" class="mt-4 pt-4 border-t border-lightLavender/40 transition-opacity duration-700 opacity-0 hidden">
+                <p class="text-sm text-deepPurple font-medium italic">So… let’s just pretend this is completely normal.</p>
+                <button type="button" onclick="nextSection(3)" class="mt-6 px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:bg-opacity-90 transition">
+                    CONTINUE →
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 3: RANDOM FACTS
+        ========================================== -->
+        <section id="sec-3" class="section-fade flex-col items-center w-full bg-paper p-6 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-2">Step 03</span>
+            <h2 class="font-serif text-xl text-textMain mb-4">Random Facts</h2>
+            
+            <div class="w-full bg-bgMain p-5 rounded-xl border border-lightLavender/80 min-h-[110px] flex items-center justify-center mb-5">
+                <p id="factText" class="text-sm text-textMain leading-relaxed transition-opacity duration-300">
+                    Did you know? Octopuses have three hearts.
+                </p>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" id="btnAnotherFact" class="px-4 py-2 rounded-xl bg-lightLavender text-deepPurple text-xs font-medium hover:bg-lavender transition">
+                    another one 🎲
+                </button>
+                <button type="button" onclick="nextSection(4)" class="px-5 py-2 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:opacity-90 transition">
+                    NEXT →
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 4: RANDOM QUESTION
+        ========================================== -->
+        <section id="sec-4" class="section-fade flex-col items-center w-full bg-paper p-6 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-2">Step 04</span>
+            <h2 class="font-serif text-lg text-textMain mb-1">Random question.</h2>
+            <p class="text-xs text-mutedText mb-5 leading-normal">What would you do if you had an entire day with absolutely no responsibilities?</p>
+
+            <div class="w-full space-y-2 mb-4" id="q1Options">
+                <button type="button" onclick="answerQ1('Sleep 14 hours straight, non-negotiable.')" class="w-full p-3 text-xs text-left bg-bgMain hover:bg-lightLavender/50 rounded-xl border border-lightLavender/60 text-textMain transition">
+                    A. Sleep 14 hours straight, non-negotiable.
+                </button>
+                <button type="button" onclick="answerQ1('Disappear to a cozy cafe with headphones on.')" class="w-full p-3 text-xs text-left bg-bgMain hover:bg-lightLavender/50 rounded-xl border border-lightLavender/60 text-textMain transition">
+                    B. Disappear to a cozy cafe with headphones on.
+                </button>
+                <button type="button" onclick="answerQ1('Binge-watch random shows while eating snacks.')" class="w-full p-3 text-xs text-left bg-bgMain hover:bg-lightLavender/50 rounded-xl border border-lightLavender/60 text-textMain transition">
+                    C. Binge-watch random shows while eating snacks.
+                </button>
+                <button type="button" onclick="answerQ1('Wander around with no destination in mind.')" class="w-full p-3 text-xs text-left bg-bgMain hover:bg-lightLavender/50 rounded-xl border border-lightLavender/60 text-textMain transition">
+                    D. Wander around with no destination in mind.
+                </button>
+            </div>
+
+            <div id="q1Feedback" class="hidden w-full bg-lightLavender/30 p-3 rounded-xl border border-lavender/50 text-xs text-deepPurple font-medium mb-4 italic">
+                <!-- Response injects here -->
+            </div>
+
+            <button type="button" id="btnNextQ1" onclick="nextSection(5)" class="hidden px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:opacity-90 transition">
+                PROCEED →
+            </button>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 5: USELESS BUTTON
+        ========================================== -->
+        <section id="sec-5" class="section-fade flex-col items-center w-full bg-paper p-6 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-2">Step 05</span>
+            <h2 class="font-serif text-lg text-textMain mb-4">A Warning</h2>
+
+            <button type="button" id="btnUseless" class="px-6 py-3 rounded-xl bg-deepPurple/10 border border-deepPurple/30 text-deepPurple font-mono text-xs font-semibold hover:bg-deepPurple hover:text-white transition-all shadow-sm mb-4">
+                Do not press this.
+            </button>
+
+            <div id="uselessFeedback" class="h-8 text-xs text-mutedText font-mono italic">
+                <!-- Text feedback -->
+            </div>
+
+            <button type="button" id="btnAfterUseless" onclick="nextSection(6)" class="hidden mt-2 px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:opacity-90 transition">
+                CONTINUE ANYWAY →
+            </button>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 6: MINI GAME
+        ========================================== -->
+        <section id="sec-6" class="section-fade flex-col items-center w-full bg-paper p-6 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-2">Step 06</span>
+            <h2 class="font-serif text-lg text-textMain mb-1">Tiny game.</h2>
+            <p class="text-xs text-mutedText mb-4">Catch the dot below.</p>
+
+            <div id="gameArea" class="w-full h-40 bg-bgMain rounded-xl border border-lightLavender relative overflow-hidden mb-4 flex items-center justify-center">
+                <button type="button" id="gameDot" class="w-7 h-7 rounded-full bg-deepPurple shadow-md absolute transition-all duration-300 ease-out flex items-center justify-center text-white text-[10px]">
+                    •
+                </button>
+                <div id="gameMsg" class="hidden text-xs text-deepPurple font-medium p-3 bg-paper/90 rounded-lg border border-lavender shadow-sm">
+                    Okay, you got it.
+                </div>
+            </div>
+
+            <p id="gameSubMsg" class="hidden text-xs text-mutedText italic mb-4">That was unnecessarily difficult.</p>
+
+            <button type="button" id="btnGameNext" onclick="nextSection(7)" class="hidden px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:opacity-90 transition">
+                NEXT →
+            </button>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 7: MYSTERY SECTION
+        ========================================== -->
+        <section id="sec-7" class="section-fade flex-col items-center w-full bg-paper p-6 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-2">Step 07</span>
+            
+            <div id="mysteryPart1" class="space-y-3">
+                <p class="font-serif text-lg text-textMain">Okay…</p>
+                <p class="text-sm text-mutedText">I feel like we’re getting somewhere.</p>
+                <button type="button" id="btnCurious" class="mt-4 px-6 py-2.5 rounded-xl bg-lightLavender text-deepPurple text-xs font-medium hover:bg-lavender transition">
+                    I'm curious.
+                </button>
+            </div>
+
+            <div id="mysteryPart2" class="hidden space-y-3 pt-2">
+                <p class="text-sm text-textMain font-medium">There's actually a reason you're here.</p>
+                <p class="text-xs text-mutedText italic">Not a dramatic reason. Don't worry.</p>
+                <button type="button" onclick="nextSection(8)" class="mt-4 px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:opacity-90 transition">
+                    CONTINUE →
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 8: RANDOM QUESTIONS PART 2
+        ========================================== -->
+        <section id="sec-8" class="section-fade flex-col items-center w-full bg-paper p-6 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <span class="text-xs font-mono uppercase tracking-widest text-mutedText mb-2">Step 08</span>
+            <h2 class="font-serif text-lg text-textMain mb-4">Three Little Questions</h2>
+
+            <div class="w-full space-y-4 text-left mb-6">
+                <!-- Sub Q1 -->
+                <div class="bg-bgMain p-3.5 rounded-xl border border-lightLavender/60">
+                    <p class="text-xs font-semibold text-deepPurple mb-2">1. What's something small that can instantly make your day better?</p>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button type="button" onclick="selectSubQ(this, 'subQ1')" class="p-2 text-[11px] bg-paper rounded-lg border border-lightLavender text-textMain hover:border-lavender text-center">Good coffee / drink ☕</button>
+                        <button type="button" onclick="selectSubQ(this, 'subQ1')" class="p-2 text-[11px] bg-paper rounded-lg border border-lightLavender text-textMain hover:border-lavender text-center">A nice playlist 🎧</button>
+                    </div>
+                </div>
+
+                <!-- Sub Q2 -->
+                <div class="bg-bgMain p-3.5 rounded-xl border border-lightLavender/60">
+                    <p class="text-xs font-semibold text-deepPurple mb-2">2. What kind of people make you feel comfortable?</p>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button type="button" onclick="selectSubQ(this, 'subQ2')" class="p-2 text-[11px] bg-paper rounded-lg border border-lightLavender text-textMain hover:border-lavender text-center">Calm & good listeners 🌿</button>
+                        <button type="button" onclick="selectSubQ(this, 'subQ2')" class="p-2 text-[11px] bg-paper rounded-lg border border-lightLavender text-textMain hover:border-lavender text-center">Funny & effortless ☁️</button>
+                    </div>
+                </div>
+
+                <!-- Sub Q3 -->
+                <div class="bg-bgMain p-3.5 rounded-xl border border-lightLavender/60">
+                    <p class="text-xs font-semibold text-deepPurple mb-2">3. What is one thing you wish people noticed more about you?</p>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button type="button" onclick="selectSubQ(this, 'subQ3')" class="p-2 text-[11px] bg-paper rounded-lg border border-lightLavender text-textMain hover:border-lavender text-center">Small quiet efforts ✨</button>
+                        <button type="button" onclick="selectSubQ(this, 'subQ3')" class="p-2 text-[11px] bg-paper rounded-lg border border-lightLavender text-textMain hover:border-lavender text-center">Random weird humor 🪐</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" id="btnSec8Next" onclick="nextSection(9)" disabled class="px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider opacity-40 cursor-not-allowed transition">
+                ALMOST THERE →
+            </button>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 9: COUNTDOWN
+        ========================================== -->
+        <section id="sec-9" class="section-fade flex-col items-center w-full bg-paper p-8 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <p class="font-serif text-lg text-textMain mb-1">Okay.</p>
+            <p class="text-xs text-mutedText mb-6">Before we continue…</p>
+
+            <div class="w-24 h-24 rounded-full bg-bgMain border-2 border-lavender flex items-center justify-center my-2 shadow-inner">
+                <span id="countdownNumber" class="font-serif text-4xl text-deepPurple font-bold transition-all duration-300">3</span>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 10: REVEAL
+        ========================================== -->
+        <section id="sec-10" class="section-fade flex-col items-center w-full bg-paper p-8 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <div id="revealStep1" class="transition-opacity duration-700">
+                <p class="font-serif italic text-lg text-mutedText">Maybe it wasn’t random after all.</p>
+            </div>
+            
+            <div id="revealStep2" class="hidden opacity-0 transition-opacity duration-1000 mt-4">
+                <h2 class="font-serif text-2xl text-deepPurple font-semibold leading-relaxed">
+                    I made this for you, Anggika.
+                </h2>
+                <button type="button" onclick="nextSection(11)" class="mt-8 px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:opacity-90 transition">
+                    READ LETTER ✉️
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 11: DIGITAL LETTER
+        ========================================== -->
+        <section id="sec-11" class="section-fade flex-col items-center w-full bg-paper p-6 md:p-8 rounded-2xl shadow-sm border border-lightLavender/80 text-left">
+            <div class="w-full flex justify-between items-center mb-6 pb-3 border-b border-lightLavender">
+                <span class="font-serif italic text-xs text-mutedText">For Anggika</span>
+                <span class="font-mono text-[10px] text-lavender">♡</span>
+            </div>
+
+            <!-- Exact Letter Text Paragraphs -->
+            <div class="space-y-4 text-xs md:text-sm text-textMain leading-relaxed font-sans">
+                <p class="letter-para opacity-0 transition-opacity duration-700">
+                    Anggika, jujur aku ngerasa beruntung bisa ketemu kamu, walaupun awalnya kita bahkan ngga punya komunikasi apa'. Dari situ aku jadi sadar kalo mungkin aku emang ngga bisa nge judge seseorang sebelum bener' tau atau kenal sama orangnya wkwk.
+                </p>
+                <p class="letter-para opacity-0 transition-opacity duration-700">
+                    Tapi sekarang, setidaknya aku tau kalo ternyata ada orang sebaik dan seperfect kamu. Tanpa aku harus punya komitmen atau apa' sama kamu, aku bisa ngeliat kalo kamu emang baik banget.
+                </p>
+                <p class="letter-para opacity-0 transition-opacity duration-700">
+                    So, be happy ya, Anggika. Semoga kamu selalu dikelilingi orang' baik yang bisa ngasih kamu hal' baik juga.
+                </p>
+                <p class="letter-para opacity-0 transition-opacity duration-700">
+                    And lastly, sorry kalo akhir' akhir ini aku sempet ganggu kamu lewat anon begitu. Sorry kalo ternyata jadi annoying atau bikin kamu kurang nyaman. Aku ngga ada maksud buat ganggu kok, cuma ya, mungkin caraku aja yang agak random wkwk.
+                </p>
+                <p class="letter-para opacity-0 transition-opacity duration-700 font-medium text-deepPurple">
+                    Anyway, that's it.
+                </p>
+                <p class="letter-para opacity-0 transition-opacity duration-700 font-serif italic text-sm text-deepPurple pt-2">
+                    Take care, Anggika. Be happy, always.
+                </p>
+                <p class="letter-para opacity-0 transition-opacity duration-700 text-lg text-deepPurple pt-1">
+                    ♡
+                </p>
+            </div>
+
+            <div class="w-full text-center mt-8 pt-4 border-t border-lightLavender/40">
+                <button type="button" onclick="nextSection(12)" class="px-6 py-2.5 rounded-xl bg-deepPurple text-white text-xs font-mono tracking-wider hover:opacity-90 transition">
+                    FINISH →
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             SECTION 12: FINAL LILY & ENDING
+        ========================================== -->
+        <section id="sec-12" class="section-fade flex-col items-center w-full bg-paper p-8 rounded-2xl shadow-sm border border-lightLavender/60 text-center">
+            <h2 class="font-serif italic text-lg text-deepPurple mb-2 leading-relaxed">
+                Take care, Anggika.<br>Be happy, always.
+            </h2>
+            <div class="text-2xl text-deepPurple my-3">♡</div>
+
+            <button type="button" onclick="resetJourney()" class="mt-8 text-[11px] font-mono text-mutedText underline hover:text-deepPurple transition">
+                replay journey
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Footer Footer -->
+    <footer class="w-full max-w-md text-center py-2 z-10">
+        <p class="text-[10px] font-mono text-mutedText/70">crafted with care • 2026</p>
+    </footer>
+
+    <!-- ==========================================
+         JAVASCRIPT LOGIC
+    ========================================== -->
+    <script>
+        // --- State Management ---
+        let currentStep = 1;
+        let typedName = "";
+        const targetName = "ANGGIKA";
+        let subQAnswers = { subQ1: false, subQ2: false, subQ3: false };
+
+        // Random Facts Data
+        const facts = [
+            "Did you know? Octopuses have three hearts.",
+            "Did you know? Bananas are berries, but strawberries technically aren't.",
+            "Did you know? A group of flamingos is called a 'flamboyance'.",
+            "Did you know? Wombat poop is cube-shaped so it doesn't roll away.",
+            "Did you know? Honey never spoils. 3,000-year-old edible honey was found in Egyptian tombs."
+        ];
+        let currentFactIdx = 0;
+
+        // --- DOM Elements ---
+        const typedTextEl = document.getElementById('typedText');
+        const gateFeedbackEl = document.getElementById('gateFeedback');
+
+        // --- Initialization on DOM Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initParticles();
+            initVirtualKeyboard();
+            updateLilyProgress(1);
+        });
+
+        // --- Background Floating Particles ---
+        function initParticles() {
+            const container = document.getElementById('particles');
+            const count = 12;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 8 + 4;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                p.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(p);
+            }
+        }
+
+        // --- SECTION SWITCHING & LILY PROGRESS ---
+        function nextSection(targetStep) {
+            const currentEl = document.getElementById(`sec-${currentStep}`);
+            const nextEl = document.getElementById(`sec-${targetStep}`);
+
+            if (currentEl) {
+                currentEl.classList.remove('active');
+                setTimeout(() => {
+                    currentEl.style.display = 'none';
+                    if (nextEl) {
+                        nextEl.style.display = 'flex';
+                        setTimeout(() => nextEl.classList.add('active'), 50);
+                    }
+                }, 400);
+            }
+
+            currentStep = targetStep;
+            updateLilyProgress(currentStep);
+
+            // Special Section Trigger Logics
+            if (targetStep === 2) {
+                setTimeout(() => {
+                    const step2 = document.getElementById('introStep2');
+                    step2.classList.remove('hidden');
+                    setTimeout(() => step2.classList.remove('opacity-0'), 50);
+                }, 1200);
+            } else if (targetStep === 9) {
+                runCountdown();
+            } else if (targetStep === 10) {
+                runReveal();
+            } else if (targetStep === 11) {
+                revealLetterParagraphs();
+            }
+        }
+
+        // --- LILY VISUAL PROGRESS INDICATOR CONTROL ---
+        function updateLilyProgress(step) {
+            const stem = document.getElementById('lilyStem');
+            const leafL1 = document.getElementById('leafL1');
+            const leafR1 = document.getElementById('leafR1');
+            const leafL2 = document.getElementById('leafL2');
+            const flowerHead = document.getElementById('flowerHead');
+            const stamens = document.getElementById('stamens');
+            const petalBackTop = document.getElementById('petalBackTop');
+            const petalFrontL = document.getElementById('petalFrontL');
+            const petalFrontR = document.getElementById('petalFrontR');
+
+            // Calculation scale normalized 1 to 12
+            const progress = (step - 1) / 11; // 0.0 to 1.0
+
+            // Stem length
+            const stemOffset = 400 - (progress * 400);
+            stem.style.strokeDashoffset = Math.max(0, stemOffset);
+
+            // Leaves growth
+            if (step >= 3) leafL1.style.transform = 'scale(1)';
+            if (step >= 5) leafR1.style.transform = 'scale(1)';
+            if (step >= 7) leafL2.style.transform = 'scale(1)';
+
+            // Flower Head Unfolding
+            const headScale = 0.3 + (progress * 0.7); // 0.3 -> 1.0
+            const headY = 20 - (progress * 20); // 20 -> 0
+            const headOpacity = 0.3 + (progress * 0.7);
+
+            flowerHead.style.transform = `translateY(${headY}px) scale(${headScale})`;
+            flowerHead.style.opacity = headOpacity;
+
+            // Bloom Petal Transforms
+            if (step >= 8) {
+                petalFrontL.style.transform = 'rotate(-12deg)';
+                petalFrontR.style.transform = 'rotate(12deg)';
+            }
+            if (step >= 10) {
+                stamens.style.opacity = '1';
+                stamens.style.transform = 'scale(1)';
+                petalBackTop.style.transform = 'translateY(-5px)';
+            }
+            if (step >= 11) {
+                // Full Bloom
+                petalFrontL.style.transform = 'rotate(-22deg) translateY(4px)';
+                petalFrontR.style.transform = 'rotate(22deg) translateY(4px)';
+            }
+        }
+
+        // --- SECTION 1: VIRTUAL KEYBOARD HANDLER ---
+        function initVirtualKeyboard() {
+            const keyboard = document.getElementById('virtualKeyboard');
+            
+            keyboard.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+
+                const key = btn.dataset.key;
+                
+                if (key) {
+                    if (typedName.length < 15) {
+                        typedName += key;
+                        updateDisplay();
+                    }
+                }
+            });
+
+            document.getElementById('btnClear').addEventListener('click', () => {
+                typedName = "";
+                updateDisplay();
+                hideGateFeedback();
+            });
+
+            document.getElementById('btnBack').addEventListener('click', () => {
+                typedName = typedName.slice(0, -1);
+                updateDisplay();
+                hideGateFeedback();
+            });
+
+            document.getElementById('btnEnter').addEventListener('click', () => {
+                checkGateName();
+            });
+        }
+
+        function updateDisplay() {
+            typedTextEl.textContent = typedName;
+        }
+
+        function hideGateFeedback() {
+            gateFeedbackEl.classList.add('opacity-0');
+        }
+
+        function checkGateName() {
+            if (typedName.trim().toUpperCase() === targetName) {
+                gateFeedbackEl.textContent = "Welcome ✨";
+                gateFeedbackEl.classList.remove('opacity-0');
+                gateFeedbackEl.classList.add('text-deepPurple');
+                setTimeout(() => {
+                    nextSection(2);
+                }, 600);
+            } else {
+                gateFeedbackEl.textContent = typedName.length === 0 ? "Please enter a name." : "Hmm. I don't think that's you.";
+                gateFeedbackEl.classList.remove('opacity-0');
+            }
+        }
+
+        // --- SECTION 3: RANDOM FACTS ---
+        document.getElementById('btnAnotherFact').addEventListener('click', () => {
+            const factText = document.getElementById('factText');
+            factText.style.opacity = '0';
+            setTimeout(() => {
+                currentFactIdx = (currentFactIdx + 1) % facts.length;
+                factText.textContent = facts[currentFactIdx];
+                factText.style.opacity = '1';
+            }, 250);
+        });
+
+        // --- SECTION 4: RANDOM QUESTION 1 ---
+        function answerQ1(answer) {
+            const feedback = document.getElementById('q1Feedback');
+            const responses = [
+                "Interesting choice.",
+                "Okay. Noted.",
+                "That says more than you think."
+            ];
+            const randomResp = responses[Math.floor(Math.random() * responses.length)];
+            
+            feedback.textContent = `"${answer}" — ${randomResp}`;
+            feedback.classList.remove('hidden');
+            document.getElementById('btnNextQ1').classList.remove('hidden');
+        }
+
+        // --- SECTION 5: USELESS BUTTON ---
+        const uselessBtn = document.getElementById('btnUseless');
+        const uselessFeedback = document.getElementById('uselessFeedback');
+        let uselessPressCount = 0;
+
+        uselessBtn.addEventListener('click', () => {
+            uselessPressCount++;
+            document.getElementById('sec-5').classList.add('animate-shake');
+            setTimeout(() => document.getElementById('sec-5').classList.remove('animate-shake'), 400);
+
+            // Subtle lily movement
+            document.getElementById('lilyContainer').style.transform = 'scale(1.05) rotate(2deg)';
+            setTimeout(() => document.getElementById('lilyContainer').style.transform = 'scale(1) rotate(0deg)', 400);
+
+            uselessFeedback.textContent = "Nothing happened.";
+            
+            setTimeout(() => {
+                uselessFeedback.textContent = "...probably.";
+                document.getElementById('btnAfterUseless').classList.remove('hidden');
+            }, 1800);
+        });
+
+        // --- SECTION 6: MINI GAME (CATCH THE DOT) ---
+        const gameDot = document.getElementById('gameDot');
+        const gameArea = document.getElementById('gameArea');
+        let dotClicks = 0;
+
+        function moveDot() {
+            const areaWidth = gameArea.clientWidth - 32;
+            const areaHeight = gameArea.clientHeight - 32;
+            const newX = Math.floor(Math.random() * areaWidth);
+            const newY = Math.floor(Math.random() * areaHeight);
+            
+            gameDot.style.left = newX + 'px';
+            gameDot.style.top = newY + 'px';
+        }
+
+        gameDot.addEventListener('click', () => {
+            dotClicks++;
+            if (dotClicks < 2) {
+                moveDot();
+            } else {
+                gameDot.classList.add('hidden');
+                document.getElementById('gameMsg').classList.remove('hidden');
+                document.getElementById('gameSubMsg').classList.remove('hidden');
+                document.getElementById('btnGameNext').classList.remove('hidden');
+            }
+        });
+        // Initial positioning
+        setTimeout(moveDot, 300);
+
+        // --- SECTION 7: MYSTERY SECTION ---
+        document.getElementById('btnCurious').addEventListener('click', () => {
+            document.getElementById('mysteryPart1').classList.add('hidden');
+            document.getElementById('mysteryPart2').classList.remove('hidden');
+        });
+
+        // --- SECTION 8: RANDOM QUESTIONS PART 2 ---
+        function selectSubQ(btn, qKey) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('button').forEach(b => {
+                b.classList.remove('bg-lightLavender', 'border-lavender', 'font-semibold');
+                b.classList.add('bg-paper');
+            });
+            btn.classList.add('bg-lightLavender', 'border-lavender', 'font-semibold');
+            btn.classList.remove('bg-paper');
+
+            subQAnswers[qKey] = true;
+
+            if (subQAnswers.subQ1 && subQAnswers.subQ2 && subQAnswers.subQ3) {
+                const nextBtn = document.getElementById('btnSec8Next');
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+        }
+
+        // --- SECTION 9: COUNTDOWN ---
+        function runCountdown() {
+            let count = 3;
+            const el = document.getElementById('countdownNumber');
+            el.textContent = count;
+
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    el.style.transform = 'scale(0.6)';
+                    setTimeout(() => {
+                        el.textContent = count;
+                        el.style.transform = 'scale(1)';
+                    }, 150);
+                } else {
+                    clearInterval(interval);
+                    nextSection(10);
+                }
+            }, 1000);
+        }
+
+        // --- SECTION 10: REVEAL ---
+        function runReveal() {
+            setTimeout(() => {
+                const step1 = document.getElementById('revealStep1');
+                step1.classList.add('opacity-0');
+                setTimeout(() => {
+                    step1.classList.add('hidden');
+                    const step2 = document.getElementById('revealStep2');
+                    step2.classList.remove('hidden');
+                    setTimeout(() => step2.classList.remove('opacity-0'), 50);
+                }, 700);
+            }, 1500);
+        }
+
+        // --- SECTION 11: DIGITAL LETTER REVEAL ---
+        function revealLetterParagraphs() {
+            const paras = document.querySelectorAll('.letter-para');
+            paras.forEach((p, index) => {
+                setTimeout(() => {
+                    p.classList.remove('opacity-0');
+                }, index * 600);
+            });
+        }
+
+        // --- REPLAY JOURNEY ---
+        function resetJourney() {
+            typedName = "";
+            updateDisplay();
+            subQAnswers = { subQ1: false, subQ2: false, subQ3: false };
+            dotClicks = 0;
+            gameDot.classList.remove('hidden');
+            document.getElementById('gameMsg').classList.add('hidden');
+            document.getElementById('gameSubMsg').classList.add('hidden');
+            document.getElementById('btnGameNext').classList.add('hidden');
+            document.getElementById('mysteryPart1').classList.remove('hidden');
+            document.getElementById('mysteryPart2').classList.add('hidden');
+            
+            nextSection(1);
+        }
+    </script>
+</body>
+</html>
